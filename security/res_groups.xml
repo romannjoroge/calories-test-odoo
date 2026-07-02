@@ -1,0 +1,5 @@
+<odoo>
+    <record id="calorie_manager" model="res.groups">
+        <field name="name">Calorie Managers</field>
+    </record>
+</odoo>

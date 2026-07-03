@@ -15,6 +15,7 @@
                     <group>
                         <field name="physical_activty"/>
                         <field name="goal"/>
+                        <field name="manager_id" />
                     </group>
                 </sheet>
             </form>
@@ -30,6 +31,19 @@
                 <field name="weight" />
                 <field name="physical_activty" />
                 <field name="calories"/>
+                <field name="manager_id" />
+            </list>
+        </field>
+    </record>
+
+    <record id="calorie_manager_listing" model="ir.ui.view">
+        <field name="name">test_calories_app.calories.managers.view.list</field>
+        <field name="model">calories.managers</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="recommendations_ids"/>
+                <field name="total_calories"/>
             </list>
         </field>
     </record>

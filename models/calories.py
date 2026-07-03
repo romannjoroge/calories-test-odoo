@@ -19,6 +19,7 @@ class UserData(models.Model):
         ("LOSS", "Weight Loss")
     ], default="LOSS")
     calories = fields.Float(compute="_calculate_calories", string="Recommended Calories", store=True)
+    manager_id = fields.Many2one("calories.managers", string="Manager")
 
     @api.depends('weight', 'height', 'physical_activty')
     def _calculate_calories(self):

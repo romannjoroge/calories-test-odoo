@@ -1,0 +1,50 @@
+<odoo>
+    <record id="view_calorie_profile_form" model="ir.ui.view">
+        <field name="name">calorie.profile.form</field>
+        <field name="model">calorie.profile</field>
+        <field name="arch" type="xml">
+            <form string="Calorie profile">
+                <sheet>
+                    <group>
+                        <field name="user_id"/>
+                        <field name="sex"/>
+                        <field name="age"/>
+                        <field name="height_cm"/>
+                        <field name="weight_kg"/>
+                        <field name="activity_level"/>
+                        <field name="goal"/>
+                    </group>
+                    <group>
+                        <field name="daily_calorie_budget" readonly="1"/>
+                        <field name="calories_consumed_today" readonly="1"/>
+                        <field name="calories_remaining_today" readonly="1" widget="progressbar"/>
+                    </group>
+                    <notebook>
+                        <page string="Meals">
+                            <field name="meal_ids">
+                                <list editable="bottom">
+                                    <field name="food_name"/>
+                                    <field name="datetime_consumed"/>
+                                    <field name="calories"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_calorie_profile_list" model="ir.ui.view">
+        <field name="name">calorie.profile.list</field>
+        <field name="model">calorie.profile</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="user_id"/>
+                <field name="daily_calorie_budget"/>
+                <field name="calories_consumed_today"/>
+                <field name="calories_remaining_today"/>
+            </list>
+        </field>
+    </record>
+</odoo>

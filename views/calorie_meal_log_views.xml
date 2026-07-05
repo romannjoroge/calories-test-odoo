@@ -1,0 +1,54 @@
+<odoo>
+    <record id="view_calorie_meal_log_form" model="ir.ui.view">
+        <field name="name">calorie.meal.log.form</field>
+        <field name="model">calorie.meal.log</field>
+        <field name="arch" type="xml">
+            <form string="Meal log">
+                <sheet>
+                    <group>
+                        <field name="profile_id"/>
+                        <field name="food_name"/>
+                        <field name="datetime_consumed"/>
+                        <field name="quantity"/>
+                    </group>
+                    <notebook>
+                        <page string="Ingredients">
+                            <field name="ingredient_ids">
+                                <list editable="bottom">
+                                    <field name="name"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Nutrition">
+                            <group>
+                                <field name="calories"/>
+                                <field name="protein_g"/>
+                                <field name="carbs_g"/>
+                                <field name="fat_g"/>
+                            </group>
+                        </page>
+                    </notebook>
+                    <group>
+                        <button name="action_fetch_nutrition_data" type="object" string="Fetch nutrition data" class="btn-primary"/>
+                        <field name="fetch_state" readonly="1"/>
+                        <field name="error_message" readonly="1" invisible="not error_message"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_calorie_meal_log_list" model="ir.ui.view">
+        <field name="name">calorie.meal.log.list</field>
+        <field name="model">calorie.meal.log</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="profile_id"/>
+                <field name="food_name"/>
+                <field name="datetime_consumed"/>
+                <field name="calories"/>
+                <field name="fetch_state"/>
+            </list>
+        </field>
+    </record>
+</odoo>

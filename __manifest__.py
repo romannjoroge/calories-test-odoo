@@ -1,20 +1,18 @@
 {
-    "name": "calories_test_odoo",
-    "summary": "Test application for recommending number of calories someone should take",
-    "version": "19.0.0.0.0",
+    "name": "Calories Test Odoo",
+    "summary": "Personal calorie budgeting, meal logging, and nutrition lookup",
+    "version": "19.0.1.0.0",
     "author": "Roman Njoroge",
     "license": "OEEL-1",
     "depends": ["base"],
     "data": [
-        # Security
         "security/res_groups.xml",
         "security/ir.model.access.csv",
-
-        # Views
-        "views/calories_users_view.xml",
-
-        # Menus
-        "views/calories_menus.xml"
+        "views/calorie_profile_views.xml",
+        "views/calorie_meal_log_views.xml",
+        "views/calories_test_odoo_menus.xml",
     ],
-    "demo": ["demo/data.xml"]
+    "demo": ["demo/data.xml"],
+    "application": True,
+    "category": "Tools",
 }

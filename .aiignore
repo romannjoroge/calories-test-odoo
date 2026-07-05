@@ -1,0 +1,64 @@
+# .aiignore — tells coding agents what NOT to read, index, or modify.
+# Copy or symlink this to whatever your tool actually looks for, e.g.:
+#   cp .aiignore .claudeignore
+#   cp .aiignore .cursorignore
+
+## --- Secrets & credentials: never read, never touch ---
+.env
+.env.*
+*.pem
+*.key
+odoo.conf
+secrets/
+**/credentials.json
+
+## --- Odoo runtime / data: large, irrelevant to code review, may contain PII ---
+filestore/
+sessions/
+*.dump
+*.sql
+*.sql.gz
+backups/
+addons_extra/          # third-party addons dropped in locally, not part of this module
+
+## --- Python / build noise ---
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+venv/
+.venv/
+
+## --- Editor / OS cruft ---
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+## --- Logs & test output: read only when explicitly asked, not by default ---
+*.log
+logs/
+test-results/
+coverage/
+.coverage
+
+## --- Generated/vendored assets not meant for editing ---
+static/lib/
+static/description/icon.png    # binary; edit via design tool, not code edits
+node_modules/
+
+## --- Git internals ---
+.git/
+
+## --- Explicitly NOT ignored (agent should always be able to see these) ---
+# calories_test_odoo/**/*.py
+# calories_test_odoo/**/*.xml
+# calories_test_odoo/tests/**
+# calories_test_odoo/__manifest__.py
+# agents.md
+# SPEC.md

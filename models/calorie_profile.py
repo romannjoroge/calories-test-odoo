@@ -1,7 +1,10 @@
+import logging
 from datetime import timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class CalorieProfile(models.Model):
@@ -14,6 +17,7 @@ class CalorieProfile(models.Model):
         for record in self:
             existing = self.search([("user_id", "=", record.user_id.id), ("id", "!=", record.id)])
             if existing:
+                _logger.warning("Duplicate calorie profile blocked for user %s", record.user_id.id)
                 raise ValidationError(_("A calorie profile already exists for this user."))
 
     user_id = fields.Many2one(

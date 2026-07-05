@@ -1,8 +1,11 @@
+import logging
 import re
 
 import requests
 
 from odoo import _, api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class CalorieMealLog(models.Model):
@@ -56,6 +59,7 @@ class CalorieMealLog(models.Model):
 
     def _fetch_nutrition_data(self, food_name):
         if not food_name:
+            _logger.warning("Nutrition lookup skipped because no food name was provided.")
             return {
                 "state": "error",
                 "message": _("Please enter a food name to look up."),
@@ -74,7 +78,8 @@ class CalorieMealLog(models.Model):
         try:
             response = requests.get(url, params=params, timeout=10)
             response.raise_for_status()
-        except requests.RequestException:
+        except requests.RequestException as exc:
+            _logger.exception("Nutrition lookup failed for %s: %s", food_name, exc)
             return {
                 "state": "error",
                 "message": _(
@@ -88,7 +93,8 @@ class CalorieMealLog(models.Model):
 
         try:
             payload = response.json()
-        except ValueError:
+        except ValueError as exc:
+            _logger.exception("Nutrition service returned invalid JSON for %s: %s", food_name, exc)
             return {
                 "state": "error",
                 "message": _("The nutrition service returned invalid data."),
@@ -100,6 +106,7 @@ class CalorieMealLog(models.Model):
 
         products = payload.get("products") or []
         if not products:
+            _logger.info("Nutrition lookup returned no products for %s", food_name)
             return {
                 "state": "not_found",
                 "message": _("No nutrition information was found for this food."),
@@ -141,6 +148,7 @@ class CalorieMealLog(models.Model):
     def action_fetch_nutrition_data(self):
         for record in self:
             ingredient_names = record._parse_ingredient_names()
+            _logger.info("Fetching nutrition data for meal %s with ingredients %s", record.id, ingredient_names)
             if not ingredient_names:
                 ingredient_names = [record.food_name]
 
@@ -168,8 +176,10 @@ class CalorieMealLog(models.Model):
             if not fetched_any:
                 aggregated["state"] = "error" if last_message else "not_found"
                 aggregated["message"] = last_message or _("No nutrition information was found for the provided ingredients.")
+                _logger.warning("Nutrition aggregation failed for meal %s: %s", record.id, aggregated["message"])
             else:
                 aggregated["message"] = False
+                _logger.info("Nutrition aggregation completed for meal %s", record.id)
 
             record.write(
                 {

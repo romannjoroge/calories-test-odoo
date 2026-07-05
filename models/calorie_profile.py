@@ -76,6 +76,12 @@ class CalorieProfile(models.Model):
         readonly=True,
         store=False,
     )
+    calories_consumed_progress = fields.Float(
+        string="Calories consumed progress",
+        compute="_compute_today_totals",
+        readonly=True,
+        store=False,
+    )
     meal_ids = fields.One2many(
         "calorie.meal.log",
         "profile_id",
@@ -112,6 +118,9 @@ class CalorieProfile(models.Model):
             consumed = sum(log.calories or 0.0 for log in meal_logs)
             record.calories_consumed_today = consumed
             record.calories_remaining_today = record.daily_calorie_budget - consumed
+            record.calories_consumed_progress = (
+                0.0 if record.daily_calorie_budget <= 0 else min(100.0, (consumed / record.daily_calorie_budget) * 100.0)
+            )
 
     @api.onchange("age", "sex", "height_cm", "weight_kg", "activity_level", "goal")
     def _onchange_profile_data(self):

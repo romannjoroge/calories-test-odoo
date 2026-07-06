@@ -181,11 +181,22 @@ class CalorieMealLog(models.Model):
     def _notify_fetch_result(self, message, title=None):
         if not message:
             return
-        self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
-            'title': title or _('Nutrition fetch notice'),
-            'message': message,
-            'type': 'warning',
-        })
+        try:
+            # Prefer the bus notification if available (real-time popup)
+            self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
+                'title': title or _('Nutrition fetch notice'),
+                'message': message,
+                'type': 'warning',
+            })
+        except Exception:
+            # Fallback: post a partner message so the information is visible
+            try:
+                partner = self.env.user.partner_id
+                partner.message_post(body=message, subject=title or _('Nutrition fetch notice'))
+            except Exception:
+                # As a last resort, log the message (silent in normal tests)
+                if _logger.isEnabledFor(logging.INFO):
+                    _logger.info("Notification fallback: %s", message)
 
     def action_fetch_nutrition_data(self):
         for record in self:

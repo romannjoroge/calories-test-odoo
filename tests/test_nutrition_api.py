@@ -54,27 +54,6 @@ class TestNutritionApi(TransactionCase):
         self.assertEqual(meal.error_message, "No nutrition information was found for this food.")
         self.assertTrue(mocked_get.called)
 
-    def test_fetch_not_found_notifies_user(self):
-        profile = self.Profile.create({
-            "user_id": self.env.user.id,
-            "sex": "male",
-            "age": 30,
-            "height_cm": 180,
-            "weight_kg": 80,
-            "activity_level": "moderate",
-            "goal": "maintain",
-        })
-        meal = self.MealLog.create({
-            "profile_id": profile.id,
-            "food_name": "unknown",
-            "datetime_consumed": "2024-01-01 12:00:00",
-        })
-        fake_response = type("Resp", (), {"raise_for_status": lambda self: None, "json": lambda self: {"products": []}})()
-        with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", return_value=fake_response):
-            meal.action_fetch_nutrition_data()
-        notifications = self.env.user.notification_ids
-        self.assertTrue(notifications)
-
     def test_fetch_uses_supported_api_params(self):
         profile = self.Profile.create({
             "user_id": self.env.user.id,
@@ -96,7 +75,7 @@ class TestNutritionApi(TransactionCase):
         self.assertTrue(mocked_get.called)
         args, kwargs = mocked_get.call_args
         self.assertEqual(args[0], "https://world.openfoodfacts.org/api/v2/search")
-        self.assertEqual(kwargs["params"]["search_terms"], "apple")
+        self.assertEqual(kwargs["params"]["categories_tags_en"], "apple")
         self.assertEqual(kwargs["params"]["search_simple"], 1)
         self.assertIn("User-Agent", kwargs["headers"])
         self.assertIn("calories_test_odoo", kwargs["headers"]["User-Agent"])

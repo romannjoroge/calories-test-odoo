@@ -34,47 +34,47 @@ The module must:
 ## Acceptance Criteria
 
 Module
-- [ ] Module installs on Odoo 19 with zero errors and zero warnings
-- [ ] Module name and folder name follow Odoo naming rules
+- [-] Module installs on Odoo 19 with zero errors and zero warnings
+- [-] Module name and folder name follow Odoo naming rules
 - [ ] Module is listed in Apps and can be installed from the UI
 
 Formula
-- [ ] A male and female with identical inputs produce different
+- [-] A male and female with identical inputs produce different
       daily calorie budgets
-- [ ] All lifestyle activity levels produce strictly different budgets
+- [-] All lifestyle activity levels produce strictly different budgets
       (more active = more calories)
-- [ ] Changing any body data field immediately recalculates the budget
+- [-] Changing any body data field immediately recalculates the budget
       without saving
-- [ ] A weight loss goal produces a lower budget than maintaining weight
-- [ ] Daily budget is always a positive number for any realistic input
+- [-] A weight loss goal produces a lower budget than maintaining weight
+- [-] Daily budget is always a positive number for any realistic input
 
 Meal Logging
-- [ ] A user can log multiple meals per day
-- [ ] Each meal entry shows the calories it contributes
-- [ ] Total calories consumed today is visible on the profile
-- [ ] Calories remaining today is visible on the profile
-- [ ] Yesterday's meals are not included in today's totals
-- [ ] Consuming more than the budget shows a negative remaining value
+- [-] A user can log multiple meals per day
+- [-] Each meal entry shows the calories it contributes
+- [-] Total calories consumed today is visible on the profile
+- [-] Calories remaining today is visible on the profile
+- [-] Yesterday's meals are not included in today's totals
+- [-] Consuming more than the budget shows a negative remaining value
 
 External API
-- [ ] Clicking the fetch button on a meal entry populates calorie and
+- [-] Clicking the fetch button on a meal entry populates calorie and
       nutritional data from a real external source
-- [ ] If the food is not found, the user sees a clear readable message
-- [ ] If the API is unreachable, the user sees a clear readable message
-- [ ] The application never crashes silently on API failure
+- [-] If the food is not found, the user sees a clear readable message
+- [-] If the API is unreachable, the user sees a clear readable message
+- [-] The application never crashes silently on API failure
 
 Code Quality
-- [ ] No deprecated Odoo API decorators
-- [ ] All field names, method names, XML IDs, and file names follow
+- [-] No deprecated Odoo API decorators
+- [-] All field names, method names, XML IDs, and file names follow
       Odoo coding guidelines
-- [ ] Every model has _name and _description
-- [ ] Error messages use the Odoo translation method correctly
-- [ ] No bare except blocks
+- [-] Every model has _name and _description
+- [-] Error messages use the Odoo translation method correctly
+- [-] No bare except blocks
 
 Tests
-- [ ] Unit tests cover the formula with known expected values
-- [ ] Unit tests cover edge cases (zero inputs, very large inputs,
+- [-] Unit tests cover the formula with known expected values
+- [-] Unit tests cover edge cases (zero inputs, very large inputs,
       overeating)
-- [ ] API tests mock the HTTP call — no real network calls in tests
-- [ ] All error paths have a corresponding test
-- [ ] All tests pass with --test-enable
+- [-] API tests mock the HTTP call — no real network calls in tests
+- [-] All error paths have a corresponding test
+- [-] All tests pass with --test-enable

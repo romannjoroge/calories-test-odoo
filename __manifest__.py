@@ -4,7 +4,7 @@
     "version": "19.0.1.0.0",
     "author": "Roman Njoroge",
     "license": "OEEL-1",
-    "depends": ["base"],
+    "depends": ["base", "product"],
     "data": [
         "security/res_groups.xml",
         "security/ir.model.access.csv",

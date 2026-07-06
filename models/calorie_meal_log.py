@@ -76,7 +76,7 @@ class CalorieMealLog(models.Model):
             "Accept": "application/json",
         }
         request_params = {
-            "search_terms": food_name,
+            "categories_tags_en": food_name,
             "search_simple": 1,
             "fields": "product_name,nutriments",
             "page_size": 1,
@@ -178,6 +178,15 @@ class CalorieMealLog(models.Model):
             "fat_g": fat_g,
         }
 
+    def _notify_fetch_result(self, message, title=None):
+        if not message:
+            return
+        self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
+            'title': title or _('Nutrition fetch notice'),
+            'message': message,
+            'type': 'warning',
+        })
+
     def action_fetch_nutrition_data(self):
         for record in self:
             ingredient_names = record._parse_ingredient_names()
@@ -244,5 +253,10 @@ class CalorieMealLog(models.Model):
                     "fat_g": aggregated["fat_g"],
                 }
             )
+            if aggregated["state"] in ("error", "not_found") and aggregated["message"]:
+                record._notify_fetch_result(
+                    aggregated["message"],
+                    title=_("Nutrition fetch") if aggregated["state"] == "error" else _("Nutrition data not found"),
+                )
             if record.profile_id:
                 record.profile_id._compute_today_totals()

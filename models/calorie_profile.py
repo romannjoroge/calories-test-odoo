@@ -153,3 +153,11 @@ class CalorieProfile(models.Model):
         if goal == "gain":
             return max(tdee + 500, 0.0)
         return max(tdee, 0.0)
+    
+    def action_add_meal(self):
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Add meal",
+            "res_model": "calorie.meal.log",
+            "view_mode": "form"
+        }

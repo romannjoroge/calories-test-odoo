@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from odoo.tests.common import TransactionCase
 
-from calories_test_odoo.models.calorie_meal_log import CalorieMealLog
+from odoo.addons.calories_test_odoo.models.calorie_meal_log import CalorieMealLog
 
 
 class TestMealLogging(TransactionCase):

@@ -38,8 +38,6 @@ class CalorieMealLog(models.Model):
     carbs_g = fields.Float(default=0.0, string="Carbs (g)")
     fat_g = fields.Float(default=0.0, string="Fat (g)")
 
-    # Calculate nutrition data from ingredients
-
     fetch_state = fields.Selection(
         [
             ("draft", "Draft"),

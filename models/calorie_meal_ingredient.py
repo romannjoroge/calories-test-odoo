@@ -12,4 +12,10 @@ class CalorieMealIngredient(models.Model):
         string="Meal",
         index=True,
     )
-    name = fields.Char(required=True, string="Ingredient", index=True)
+    ingredient_id = fields.Many2one(
+        "product.template",
+        required=True,
+        ondelete="cascade",
+        string = "Ingredient",
+    )
+    quantity = fields.Float(required=True, default=1.0, string="Weight (g)")

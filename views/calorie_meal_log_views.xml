@@ -14,7 +14,8 @@
                         <page string="Ingredients">
                             <field name="ingredient_ids">
                                 <list editable="bottom">
-                                    <field name="name"/>
+                                    <field name="ingredient_id"/>
+                                    <field name="quantity"/>
                                 </list>
                             </field>
                         </page>

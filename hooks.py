@@ -45,7 +45,7 @@ def _import_ingredients(env, path):
         _logger.warning("Unable to import ingredients")
     else:
         for row in rows:
-            sku = row.get('code', '').strip()
+            sku = row.get('code', '').strip() + row.get('producer_product_id', '').strip()
             if not sku:
                 skipped += 1
                 continue

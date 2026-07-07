@@ -4,14 +4,112 @@ import requests
 from odoo.tests.common import TransactionCase
 
 
+# class TestNutritionApi(TransactionCase):
+#     def setUp(self, *args, **kwargs):
+#         super().setUp(*args, **kwargs)
+#         self.MealLog = self.env["calorie.meal.log"]
+#         self.Profile = self.env["calorie.profile"]
+
+#     def test_fetch_success(self):
+#         profile = self.Profile.create({
+#             "user_id": self.env.user.id,
+#             "sex": "male",
+#             "age": 30,
+#             "height_cm": 180,
+#             "weight_kg": 80,
+#             "activity_level": "moderate",
+#             "goal": "maintain",
+#         })
+#         meal = self.MealLog.create({
+#             "profile_id": profile.id,
+#             "food_name": "apple",
+#             "datetime_consumed": "2024-01-01 12:00:00",
+#         })
+#         fake_response = type("Resp", (), {"raise_for_status": lambda self: None, "json": lambda self: {"products": [{"nutriments": {"energy-kcal_100g": 52.0, "proteins_100g": 0.3, "carbohydrates_100g": 14.0, "fat_100g": 0.2}}]}})()
+#         with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", return_value=fake_response) as mocked_get:
+#             meal._onchange_ingredients()
+#         self.assertEqual(meal.fetch_state, "fetched")
+#         self.assertEqual(meal.calories, 52.0)
+#         self.assertTrue(mocked_get.called)
+
+#     def test_fetch_not_found(self):
+#         profile = self.Profile.create({
+#             "user_id": self.env.user.id,
+#             "sex": "male",
+#             "age": 30,
+#             "height_cm": 180,
+#             "weight_kg": 80,
+#             "activity_level": "moderate",
+#             "goal": "maintain",
+#         })
+#         meal = self.MealLog.create({
+#             "profile_id": profile.id,
+#             "food_name": "unknown",
+#             "datetime_consumed": "2024-01-01 12:00:00",
+#         })
+#         fake_response = type("Resp", (), {"raise_for_status": lambda self: None, "json": lambda self: {"products": []}})()
+#         with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", return_value=fake_response) as mocked_get:
+#             meal._onchange_ingredients()
+#         self.assertEqual(meal.fetch_state, "not_found")
+#         self.assertEqual(meal.error_message, "No nutrition information was found for this food.")
+#         self.assertTrue(mocked_get.called)
+
+#     def test_fetch_uses_supported_api_params(self):
+#         profile = self.Profile.create({
+#             "user_id": self.env.user.id,
+#             "sex": "male",
+#             "age": 30,
+#             "height_cm": 180,
+#             "weight_kg": 80,
+#             "activity_level": "moderate",
+#             "goal": "maintain",
+#         })
+#         meal = self.MealLog.create({
+#             "profile_id": profile.id,
+#             "food_name": "apple",
+#             "datetime_consumed": "2024-01-01 12:00:00",
+#         })
+#         fake_response = type("Resp", (), {"raise_for_status": lambda self: None, "json": lambda self: {"products": []}})()
+#         with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", return_value=fake_response) as mocked_get:
+#             meal._onchange_ingredients()
+#         self.assertTrue(mocked_get.called)
+#         args, kwargs = mocked_get.call_args
+#         self.assertEqual(args[0], "https://world.openfoodfacts.org/api/v2/search")
+#         self.assertEqual(kwargs["params"]["categories_tags_en"], "apple")
+#         self.assertEqual(kwargs["params"]["search_simple"], 1)
+#         self.assertIn("User-Agent", kwargs["headers"])
+#         self.assertIn("calories_test_odoo", kwargs["headers"]["User-Agent"])
+
+#     def test_fetch_connection_error(self):
+#         profile = self.Profile.create({
+#             "user_id": self.env.user.id,
+#             "sex": "male",
+#             "age": 30,
+#             "height_cm": 180,
+#             "weight_kg": 80,
+#             "activity_level": "moderate",
+#             "goal": "maintain",
+#         })
+#         meal = self.MealLog.create({
+#             "profile_id": profile.id,
+#             "food_name": "apple",
+#             "datetime_consumed": "2024-01-01 12:00:00",
+#         })
+#         with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", side_effect=requests.exceptions.Timeout("boom")) as mocked_get:
+#             meal._onchange_ingredients()
+#         self.assertEqual(meal.fetch_state, "error")
+#         self.assertIn("Unable to reach", meal.error_message)
+#         self.assertTrue(mocked_get.called)
+
 class TestNutritionApi(TransactionCase):
     def setUp(self, *args, **kwargs):
         super().setUp(*args, **kwargs)
         self.MealLog = self.env["calorie.meal.log"]
         self.Profile = self.env["calorie.profile"]
+        self.Product = self.env["product.template"]
 
-    def test_fetch_success(self):
-        profile = self.Profile.create({
+    def _create_profile(self):
+        return self.Profile.create({
             "user_id": self.env.user.id,
             "sex": "male",
             "age": 30,
@@ -20,58 +118,80 @@ class TestNutritionApi(TransactionCase):
             "activity_level": "moderate",
             "goal": "maintain",
         })
+
+    def test_fetch_success(self):
+        profile = self._create_profile()
+        # Zero nutrition on the product triggers the API fallback
+        apple = self.Product.create({"name": "apple"})
         meal = self.MealLog.create({
             "profile_id": profile.id,
-            "food_name": "apple",
+            "food_name": "Apple snack",
             "datetime_consumed": "2024-01-01 12:00:00",
+            "ingredient_ids": [(0, 0, {"ingredient_id": apple.id, "quantity": 2})],
         })
-        fake_response = type("Resp", (), {"raise_for_status": lambda self: None, "json": lambda self: {"products": [{"nutriments": {"energy-kcal_100g": 52.0, "proteins_100g": 0.3, "carbohydrates_100g": 14.0, "fat_100g": 0.2}}]}})()
-        with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", return_value=fake_response) as mocked_get:
+        fake_response = type("Resp", (), {
+            "raise_for_status": lambda self: None,
+            "json": lambda self: {"products": [{"nutriments": {
+                "energy-kcal_100g": 52.0, "proteins_100g": 0.3,
+                "carbohydrates_100g": 14.0, "fat_100g": 0.2,
+            }}]},
+        })()
+        with patch(
+            "odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get",
+            return_value=fake_response,
+        ) as mocked_get:
             meal._onchange_ingredients()
+
         self.assertEqual(meal.fetch_state, "fetched")
-        self.assertEqual(meal.calories, 52.0)
+        # Fetched value is scaled by quantity, same as the stored-product path
+        self.assertEqual(meal.calories, 104.0)  # 52.0 * 2
+        self.assertEqual(meal.protein_g, 0.6)   # 0.3 * 2
+        self.assertEqual(meal.carbs_g, 28.0)    # 14.0 * 2
+        self.assertEqual(meal.fat_g, 0.4)       # 0.2 * 2
         self.assertTrue(mocked_get.called)
 
     def test_fetch_not_found(self):
-        profile = self.Profile.create({
-            "user_id": self.env.user.id,
-            "sex": "male",
-            "age": 30,
-            "height_cm": 180,
-            "weight_kg": 80,
-            "activity_level": "moderate",
-            "goal": "maintain",
-        })
+        profile = self._create_profile()
+        unknown = self.Product.create({"name": "unknown"})
         meal = self.MealLog.create({
             "profile_id": profile.id,
-            "food_name": "unknown",
+            "food_name": "Mystery snack",
             "datetime_consumed": "2024-01-01 12:00:00",
+            "ingredient_ids": [(0, 0, {"ingredient_id": unknown.id, "quantity": 1})],
         })
-        fake_response = type("Resp", (), {"raise_for_status": lambda self: None, "json": lambda self: {"products": []}})()
-        with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", return_value=fake_response) as mocked_get:
+        fake_response = type("Resp", (), {
+            "raise_for_status": lambda self: None,
+            "json": lambda self: {"products": []},
+        })()
+        with patch(
+            "odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get",
+            return_value=fake_response,
+        ) as mocked_get:
             meal._onchange_ingredients()
+
         self.assertEqual(meal.fetch_state, "not_found")
         self.assertEqual(meal.error_message, "No nutrition information was found for this food.")
         self.assertTrue(mocked_get.called)
 
     def test_fetch_uses_supported_api_params(self):
-        profile = self.Profile.create({
-            "user_id": self.env.user.id,
-            "sex": "male",
-            "age": 30,
-            "height_cm": 180,
-            "weight_kg": 80,
-            "activity_level": "moderate",
-            "goal": "maintain",
-        })
+        profile = self._create_profile()
+        apple = self.Product.create({"name": "apple"})
         meal = self.MealLog.create({
             "profile_id": profile.id,
-            "food_name": "apple",
+            "food_name": "Apple snack",
             "datetime_consumed": "2024-01-01 12:00:00",
+            "ingredient_ids": [(0, 0, {"ingredient_id": apple.id, "quantity": 1})],
         })
-        fake_response = type("Resp", (), {"raise_for_status": lambda self: None, "json": lambda self: {"products": []}})()
-        with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", return_value=fake_response) as mocked_get:
+        fake_response = type("Resp", (), {
+            "raise_for_status": lambda self: None,
+            "json": lambda self: {"products": []},
+        })()
+        with patch(
+            "odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get",
+            return_value=fake_response,
+        ) as mocked_get:
             meal._onchange_ingredients()
+
         self.assertTrue(mocked_get.called)
         args, kwargs = mocked_get.call_args
         self.assertEqual(args[0], "https://world.openfoodfacts.org/api/v2/search")
@@ -81,22 +201,20 @@ class TestNutritionApi(TransactionCase):
         self.assertIn("calories_test_odoo", kwargs["headers"]["User-Agent"])
 
     def test_fetch_connection_error(self):
-        profile = self.Profile.create({
-            "user_id": self.env.user.id,
-            "sex": "male",
-            "age": 30,
-            "height_cm": 180,
-            "weight_kg": 80,
-            "activity_level": "moderate",
-            "goal": "maintain",
-        })
+        profile = self._create_profile()
+        apple = self.Product.create({"name": "apple"})
         meal = self.MealLog.create({
             "profile_id": profile.id,
-            "food_name": "apple",
+            "food_name": "Apple snack",
             "datetime_consumed": "2024-01-01 12:00:00",
+            "ingredient_ids": [(0, 0, {"ingredient_id": apple.id, "quantity": 1})],
         })
-        with patch("odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get", side_effect=requests.exceptions.Timeout("boom")) as mocked_get:
+        with patch(
+            "odoo.addons.calories_test_odoo.models.calorie_meal_log.requests.get",
+            side_effect=requests.exceptions.Timeout("boom"),
+        ) as mocked_get:
             meal._onchange_ingredients()
+
         self.assertEqual(meal.fetch_state, "error")
         self.assertIn("Unable to reach", meal.error_message)
         self.assertTrue(mocked_get.called)

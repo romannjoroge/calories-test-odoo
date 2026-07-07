@@ -78,6 +78,7 @@ class CalorieMealLog(models.Model):
                     else:
                         # If details couldn't be gotten go with defaults
                         if details["state"] != "fetched":
+                            error_fetching_encountered = True
                             meal._notify_fetch_result(
                                 details["message"] if details["message"] else _("Could not get nutrition details"),
                                 title=_("Nutrition fetch") if details["state"] == "error" else _("Nutrition data not found"),
@@ -87,10 +88,10 @@ class CalorieMealLog(models.Model):
                         else:
                             meal.fetch_state = details["state"]
                             meal.error_message = details["message"]
-                            meal.calories += details["calories"]
-                            meal.protein_g += details["protein_g"]
-                            meal.carbs_g += details["carbs_g"]
-                            meal.fat_g += details["fat_g"]
+                            meal.calories += details["calories"] * ingredient.quantity
+                            meal.protein_g += details["protein_g"] * ingredient.quantity
+                            meal.carbs_g += details["carbs_g"] * ingredient.quantity
+                            meal.fat_g += details["fat_g"] * ingredient.quantity
                 else:
                     meal.calories += ingredient.ingredient_id.calories * ingredient.quantity
                     meal.protein_g += ingredient.ingredient_id.protein * ingredient.quantity
@@ -119,7 +120,7 @@ class CalorieMealLog(models.Model):
                 _logger.warning("Nutrition lookup skipped because no food name was provided.")
             return {
                 "state": "error",
-                "message": translate("Please enter a food name to look up."),
+                "message": translate("Please choose an ingredient to look up."),
                 "calories": 0.0,
                 "protein_g": 0.0,
                 "carbs_g": 0.0,
@@ -145,7 +146,7 @@ class CalorieMealLog(models.Model):
                 timeout=10,
             )
             response.raise_for_status()
-        except requests.RequestException as exc:
+        except requests.HTTPError as exc:
             if _logger.isEnabledFor(logging.WARNING):
                 _logger.warning("Nutrition lookup failed for %s using v2 search: %s", food_name, exc)
             try:
@@ -176,6 +177,23 @@ class CalorieMealLog(models.Model):
                     "carbs_g": 0.0,
                     "fat_g": 0.0,
                 }
+        except requests.RequestException as exc:
+            if _logger.isEnabledFor(logging.ERROR):
+                _logger.exception(
+                    "Nutrition lookup failed for %s using fallback endpoint: %s",
+                    food_name,
+                    exc,
+                )
+            return {
+                "state": "error",
+                "message": translate(
+                    "Unable to reach the nutrition service right now. Please try again later."
+                ),
+                "calories": 0.0,
+                "protein_g": 0.0,
+                "carbs_g": 0.0,
+                "fat_g": 0.0,
+            }
 
         try:
             payload = response.json()
